@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>49.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <description>Updates PO with FFA currency for later reference in process (Single Currency Org)</description>
+    <interviewLabel>SM Update PO with FFA Currency ID {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>SM Update PO with FFA Currency ID</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <description>Retrieve the ISO Code from the SCM Currency</description>
+        <name>Get_Currency_Code</name>
+        <label>Get Currency Code</label>
+        <locationX>187</locationX>
+        <locationY>208</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Get_FFA_Currency_ID</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>inSCMCurrencyID</elementReference>
+            </value>
+        </filters>
+        <object>SCMC__Currency_Master__c</object>
+        <outputAssignments>
+            <assignToReference>varCurrencyISOCode</assignToReference>
+            <field>Name</field>
+        </outputAssignments>
+    </recordLookups>
+    <recordLookups>
+        <description>Retrieve the FFA Company ID from the ERP Company on the PO</description>
+        <name>Get_FFA_Company_ID</name>
+        <label>Get FFA Company ID</label>
+        <locationX>187</locationX>
+        <locationY>50</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Get_Currency_Code</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>inERPCompanyID</elementReference>
+            </value>
+        </filters>
+        <object>fferpcore__Company__c</object>
+        <outputAssignments>
+            <assignToReference>varFFACompanyID</assignToReference>
+            <field>c2g__msg_link_ffa_id__c</field>
+        </outputAssignments>
+    </recordLookups>
+    <recordLookups>
+        <description>Retrieve the FFA Currency ID</description>
+        <name>Get_FFA_Currency_ID</name>
+        <label>Get FFA Currency ID</label>
+        <locationX>187</locationX>
+        <locationY>367</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Update_PO</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Name</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>varCurrencyISOCode</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>c2g__OwnerCompany__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>varFFACompanyID</elementReference>
+            </value>
+        </filters>
+        <object>c2g__codaAccountingCurrency__c</object>
+        <outputAssignments>
+            <assignToReference>varFFACurrencyID</assignToReference>
+            <field>Id</field>
+        </outputAssignments>
+    </recordLookups>
+    <recordUpdates>
+        <description>Updates PO to hold resulting Currency ID for later reference</description>
+        <name>Update_PO</name>
+        <label>Update PO</label>
+        <locationX>358</locationX>
+        <locationY>367</locationY>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>inPurchaseOrderID</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>FFX_FFACurrencyID__c</field>
+            <value>
+                <elementReference>varFFACurrencyID</elementReference>
+            </value>
+        </inputAssignments>
+        <object>SCMC__Purchase_Order__c</object>
+    </recordUpdates>
+    <start>
+        <locationX>50</locationX>
+        <locationY>50</locationY>
+        <connector>
+            <targetReference>Get_FFA_Company_ID</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+    <variables>
+        <description>ERP Company ID (from PO)</description>
+        <name>inERPCompanyID</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>inPurchaseOrderID</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>SCM Currency Master ID</description>
+        <name>inSCMCurrencyID</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>varCurrencyISOCode</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>FFA Company ID</description>
+        <name>varFFACompanyID</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>varFFACurrencyID</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

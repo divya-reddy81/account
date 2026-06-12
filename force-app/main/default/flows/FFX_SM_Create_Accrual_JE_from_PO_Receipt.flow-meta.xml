@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Send_JE_Later</name>
+        <label>Send JE Later</label>
+        <locationX>632</locationX>
+        <locationY>221</locationY>
+        <actionName>fferpcore__MessagingActionDeliverLater</actionName>
+        <actionType>apex</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>publicationIdentifier</name>
+            <value>
+                <stringValue>PO Receipt Line - Receipt Line</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>recordId</name>
+            <value>
+                <elementReference>inReceiptLineID</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>fferpcore__MessagingActionDeliverLater</nameSegment>
+    </actionCalls>
+    <actionCalls>
+        <name>Send_JE_Now</name>
+        <label>Send JE Now</label>
+        <locationX>174</locationX>
+        <locationY>219</locationY>
+        <actionName>fferpcore__MessagingActionDeliverNow</actionName>
+        <actionType>apex</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>publicationIdentifier</name>
+            <value>
+                <stringValue>PO Receipt Line - Receipt Line</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>recordId</name>
+            <value>
+                <elementReference>inReceiptLineID</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>fferpcore__MessagingActionDeliverNow</nameSegment>
+    </actionCalls>
+    <apiVersion>49.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <decisions>
+        <name>Delivery_Method</name>
+        <label>Delivery Method</label>
+        <locationX>392</locationX>
+        <locationY>223</locationY>
+        <defaultConnector>
+            <targetReference>Send_JE_Later</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Deliver Later</defaultConnectorLabel>
+        <rules>
+            <name>Deliver_Now</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>inDeliverNow</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Send_JE_Now</targetReference>
+            </connector>
+            <label>Deliver Now</label>
+        </rules>
+    </decisions>
+    <description>Creates Accrual Lines &amp; JE for PO Receipt (single currency Org)</description>
+    <interviewLabel>SM Create Accrual JE from PO Receipt {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>SM Create Accrual JE from PO Receipt</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordCreates>
+        <description>Adds a &apos;credit&apos; accounting line for the PO Receipt</description>
+        <name>Create_CR_Line</name>
+        <label>Create CR Line</label>
+        <locationX>400</locationX>
+        <locationY>50</locationY>
+        <connector>
+            <targetReference>Delivery_Method</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>CurrencyIsoCode</field>
+            <value>
+                <elementReference>inCurrencyISOCode</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>FFX_Line_Type__c</field>
+            <value>
+                <stringValue>Credit</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>FFX_Receipt_Line__c</field>
+            <value>
+                <elementReference>inReceiptLineID</elementReference>
+            </value>
+        </inputAssignments>
+        <object>FFX_Receipt_Line_Accounting__c</object>
+    </recordCreates>
+    <recordCreates>
+        <description>Adds a &apos;debit&apos; accounting line for the PO Receipt</description>
+        <name>Create_DR_Line</name>
+        <label>Create DR Line</label>
+        <locationX>176</locationX>
+        <locationY>50</locationY>
+        <connector>
+            <targetReference>Create_CR_Line</targetReference>
+        </connector>
+        <inputAssignments>
+            <field>CurrencyIsoCode</field>
+            <value>
+                <elementReference>inCurrencyISOCode</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>FFX_Line_Type__c</field>
+            <value>
+                <stringValue>Debit</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>FFX_Receipt_Line__c</field>
+            <value>
+                <elementReference>inReceiptLineID</elementReference>
+            </value>
+        </inputAssignments>
+        <object>FFX_Receipt_Line_Accounting__c</object>
+    </recordCreates>
+    <start>
+        <locationX>50</locationX>
+        <locationY>50</locationY>
+        <connector>
+            <targetReference>Create_DR_Line</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+    <variables>
+        <name>inCurrencyISOCode</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <name>inDeliverNow</name>
+        <dataType>Boolean</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Receipt Line ID from SCM/PO</description>
+        <name>inReceiptLineID</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <customProperties>
+        <name>ScreenProgressIndicator</name>
+        <value>
+            <stringValue>{&quot;location&quot;:&quot;top&quot;,&quot;type&quot;:&quot;simple&quot;}</stringValue>
+        </value>
+    </customProperties>
+    <description>This Flow is ONLY used in orgs created via a Sign Up Form. DO NOT use in Sandbox or Production environments. It performs two functions: 1. Toggles the ‘Reversed ID Chain’ value on the RPG records to sever the link to the Trial Source Org (TSO) and establish a localised chain. 2. Dynamically renames the &quot;Zack Mundy&quot; Resource record to match the running user. This name swap aligns the resource record with the running user&apos;s Salesforce User and assigns the user to existing projects, allowing LWCs filtered for &quot;My Projects&quot; to display data.</description>
+    <environments>Default</environments>
+    <interviewLabel>CBO Setup RPG ID Chain Reset {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>CBO Setup RPG ID Chain Reset / Rename Zack Mundy as Running User</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <recordUpdates>
+        <description>Resets the Reversed Group ID Chain.</description>
+        <name>Update_Group_ID_Chain</name>
+        <label>Update Group ID Chain</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Update_Zack_Mundy_to_Running_User</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Name</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Global Group</stringValue>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>pse__Reversed_ID_Chain__c</field>
+            <value>
+                <stringValue>1</stringValue>
+            </value>
+        </inputAssignments>
+        <object>pse__Grp__c</object>
+    </recordUpdates>
+    <recordUpdates>
+        <description>Resets the Reversed Practice ID Chain.</description>
+        <name>Update_Practice_ID_Chain</name>
+        <label>Update Practice ID Chain</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Update_Group_ID_Chain</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Name</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Global Practice</stringValue>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>pse__Reversed_ID_Chain__c</field>
+            <value>
+                <stringValue>1</stringValue>
+            </value>
+        </inputAssignments>
+        <object>pse__Practice__c</object>
+    </recordUpdates>
+    <recordUpdates>
+        <description>Resets the Reversed Region ID Chain.</description>
+        <name>Update_Region_ID_Chain</name>
+        <label>Update Region ID Chain</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Update_Practice_ID_Chain</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Name</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Global Region</stringValue>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>pse__Reversed_ID_Chain__c</field>
+            <value>
+                <stringValue>1</stringValue>
+            </value>
+        </inputAssignments>
+        <object>pse__Region__c</object>
+    </recordUpdates>
+    <recordUpdates>
+        <description>Locates the &quot;Zack Mundy&quot; PSA Resource record and updates it to match the Name of the running user. By aligning the Resource record with the current Salesforce User, the user is automatically &quot;assigned&quot; to several projects. This allows Lightning Web Components (LWCs) filtered by &quot;My Projects&quot; to populate and display data.</description>
+        <name>Update_Zack_Mundy_to_Running_User</name>
+        <label>Update Zack Mundy to Running User</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Reversed_RPG_Chain_IDS</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>FirstName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Zack</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>LastName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Mundy</stringValue>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>FirstName</field>
+            <value>
+                <elementReference>$User.FirstName</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>LastName</field>
+            <value>
+                <elementReference>$User.LastName</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Contact</object>
+    </recordUpdates>
+    <screens>
+        <description>The notification shown to users to confirm the process finished without errors.</description>
+        <name>Reversed_RPG_Chain_IDS</name>
+        <label>Reversed RPG Chain IDS</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <fields>
+            <name>RPG_ID_Reset_Complete</name>
+            <fieldText>&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;color: rgb(0, 119, 67); font-size: 16px;&quot;&gt;Success! &lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;color: rgb(0, 119, 67); font-size: 14px;&quot;&gt;The RPG ID Chains have been reset. &lt;/strong&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;br&gt;&lt;/p&gt;&lt;p style=&quot;text-align: center;&quot;&gt;&lt;strong style=&quot;color: rgb(0, 119, 67);&quot;&gt;You may now minimize this window and &lt;/strong&gt;&lt;strong style=&quot;color: rgb(0, 119, 67); font-size: 12px; background-color: rgb(255, 255, 255);&quot;&gt;proceed to the appropriate app&lt;/strong&gt;&lt;span style=&quot;color: rgb(0, 119, 67);&quot;&gt;.&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <showFooter>false</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Update_Region_ID_Chain</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+</Flow>
