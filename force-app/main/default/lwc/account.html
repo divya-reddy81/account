@@ -1,0 +1,29 @@
+<template>
+    <lightning-card title="Update Account Name" icon-name="standard:account">
+        <div class="slds-var-m-around_medium">
+            <!-- Record ID Input -->
+            <lightning-input 
+                label="Account ID" 
+                value={accountId} 
+                onchange={handleIdChange}
+                placeholder="Enter 18-digit Account ID...">
+            </lightning-input>
+
+            <!-- New Name Input -->
+            <lightning-input 
+                label="New Account Name" 
+                value={accountName} 
+                onchange={handleNameChange}
+                placeholder="Enter new name...">
+            </lightning-input>
+
+            <!-- Action Button -->
+            <lightning-button 
+                label="Update Account" 
+                variant="brand" 
+                onclick={handleUpdate}
+                class="slds-var-m-top_medium">
+            </lightning-button>
+        </div>
+    </lightning-card>
+</template>
