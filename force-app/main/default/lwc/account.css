@@ -1,0 +1,13 @@
+:host {
+    display: block;
+}
+
+lightning-button {
+    display: block;
+    width: 100%;
+}
+
+/* Custom spacing for input components */
+lightning-input {
+    margin-bottom: 0.75rem;
+}
